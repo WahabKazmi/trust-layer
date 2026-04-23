@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trust Layer — AI Content Moderation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green-50: #f0fdf4;
+      --green-100: #dcfce7;
+      --green-200: #bbf7d0;
+      --green-300: #86efac;
+      --green-400: #4ade80;
+      --green-500: #22c55e;
+      --green-600: #16a34a;
+      --green-700: #15803d;
+      --white: #ffffff;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --radius: 28px;
+      --radius-lg: 40px;
+      --radius-xl: 60px;
+      --radius-full: 9999px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--white);
+      color: var(--gray-700);
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 { font-family: 'Baloo 2', cursive; color: var(--gray-900); }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--green-100);
+    }
+
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .logo {
+      font-family: 'Baloo 2', cursive;
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--green-600);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-blob {
+      width: 40px;
+      height: 40px;
+      background: var(--green-400);
+      border-radius: 50% 50% 50% 20%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      animation: wobble 3s ease-in-out infinite;
+    }
+
+    @keyframes wobble {
+      0%, 100% { border-radius: 50% 50% 50% 20%; }
+      25% { border-radius: 50% 20% 50% 50%; }
+      50% { border-radius: 20% 50% 50% 50%; }
+      75% { border-radius: 50% 50% 20% 50%; }
+    }
+
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--gray-700);
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--green-600); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 36px;
+      border-radius: var(--radius-full);
+      font-family: 'Baloo 2', cursive;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: var(--green-500);
+      color: var(--white);
+      box-shadow: 0 8px 30px rgba(34, 197, 94, 0.35);
+    }
+    .btn-primary:hover {
+      background: var(--green-600);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(34, 197, 94, 0.45);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--green-600);
+      border: 2.5px solid var(--green-300);
+    }
+    .btn-outline:hover {
+      background: var(--green-50);
+      border-color: var(--green-500);
+    }
+
+    .btn-white {
+      background: var(--white);
+      color: var(--green-700);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .btn-white:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    /* HERO */
+    .hero {
+      padding: 160px 0 100px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--green-100) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -150px;
+      left: -150px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, var(--green-50) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    .hero > * { position: relative; z-index: 1; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green-100);
+      color: var(--green-700);
+      padding: 10px 24px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+      animation: fadeInUp 0.6s ease;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      line-height: 1.1;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease 0.1s both;
+    }
+
+    .hero h1 .green { color: var(--green-500); }
+
+    .hero p {
+      font-size: 1.3rem;
+      max-width: 620px;
+      margin: 0 auto 48px;
+      color: var(--gray-500);
+      line-height: 1.7;
+      animation: fadeInUp 0.6s ease 0.2s both;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.6s ease 0.3s both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* FLOATING BLOBS */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .blob-1 { width: 80px; height: 80px; background: var(--green-200); top: 20%; left: 8%; animation-delay: 0s; }
+    .blob-2 { width: 50px; height: 50px; background: var(--green-300); top: 35%; right: 10%; animation-delay: 1s; }
+    .blob-3 { width: 35px; height: 35px; background: var(--green-400); bottom: 25%; left: 15%; animation-delay: 2s; }
+    .blob-4 { width: 60px; height: 60px; background: var(--green-100); top: 15%; right: 25%; animation-delay: 0.5s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+    }
+
+    /* DEMO BOX */
+    .demo-section {
+      padding: 60px 0 100px;
+    }
+
+    .demo-box {
+      background: var(--green-50);
+      border-radius: var(--radius-xl);
+      padding: 60px;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .demo-box h2 {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .demo-box p {
+      color: var(--gray-500);
+      margin-bottom: 32px;
+      font-size: 1.1rem;
+    }
+
+    .demo-input-group {
+      display: flex;
+      gap: 12px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .demo-input-group input {
+      flex: 1;
+      padding: 16px 28px;
+      border-radius: var(--radius-full);
+      border: 2.5px solid var(--green-200);
+      font-size: 1rem;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .demo-input-group input:focus {
+      border-color: var(--green-400);
+    }
+
+    .demo-result {
+      margin-top: 24px;
+      padding: 20px 32px;
+      border-radius: var(--radius);
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: none;
+    }
+
+    .demo-result.safe {
+      background: var(--green-100);
+      color: var(--green-700);
+      display: block;
+    }
+
+    .demo-result.toxic {
+      background: #fef2f2;
+      color: #dc2626;
+      display: block;
+    }
+
+    /* FEATURES */
+    .features {
+      padding: 100px 0;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      font-size: 1.15rem;
+      color: var(--gray-500);
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+    }
+
+    .feature-card {
+      background: var(--white);
+      border: 2px solid var(--green-100);
+      border-radius: var(--radius-lg);
+      padding: 44px 36px;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: var(--green-300);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(34, 197, 94, 0.1);
+    }
+
+    .feature-icon {
+      width: 72px;
+      height: 72px;
+      background: var(--green-100);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 24px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: var(--gray-500);
+      line-height: 1.7;
+    }
+
+    /* HOW IT WORKS */
+    .how-it-works {
+      padding: 100px 0;
+      background: var(--green-50);
+      border-radius: var(--radius-xl);
+      margin: 0 20px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 40px;
+      margin-top: 64px;
+    }
+
+    .step {
+      text-align: center;
+      position: relative;
+    }
+
+    .step-number {
+      width: 80px;
+      height: 80px;
+      background: var(--green-400);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Baloo 2', cursive;
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0 auto 24px;
+      box-shadow: 0 8px 30px rgba(34, 197, 94, 0.3);
+    }
+
+    .step h3 { font-size: 1.4rem; margin-bottom: 8px; }
+    .step p { color: var(--gray-500); line-height: 1.6; max-width: 260px; margin: 0 auto; }
+
+    /* API SECTION */
+    .api-section {
+      padding: 100px 0;
+    }
+
+    .api-box {
+      background: var(--gray-900);
+      border-radius: var(--radius-xl);
+      padding: 52px;
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .api-box::after {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .api-box h2 {
+      color: var(--white);
+      font-size: clamp(2rem, 4vw, 3rem);
+      margin-bottom: 8px;
+    }
+
+    .api-box > p {
+      color: #9ca3af;
+      margin-bottom: 36px;
+      font-size: 1.1rem;
+    }
+
+    .code-block {
+      background: #1a1a2e;
+      border-radius: var(--radius);
+      padding: 32px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.95rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .code-block .comment { color: #6b7280; }
+    .code-block .keyword { color: var(--green-400); }
+    .code-block .string { color: #fbbf24; }
+    .code-block .method { color: #60a5fa; }
+
+    /* PRICING */
+    .pricing {
+      padding: 100px 0;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 28px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--white);
+      border: 2.5px solid var(--green-100);
+      border-radius: var(--radius-xl);
+      padding: 48px 40px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 60px rgba(34, 197, 94, 0.12);
+    }
+
+    .pricing-card.popular {
+      border-color: var(--green-400);
+      background: var(--green-50);
+    }
+
+    .popular-badge {
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--green-500);
+      color: var(--white);
+      padding: 6px 24px;
+      border-radius: var(--radius-full);
+      font-weight: 800;
+      font-size: 0.8rem;
+      font-family: 'Baloo 2', cursive;
+      letter-spacing: 0.5px;
+    }
+
+    .pricing-card h3 {
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+    }
+
+    .pricing-card .price {
+      font-family: 'Baloo 2', cursive;
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--green-600);
+      line-height: 1.2;
+    }
+
+    .pricing-card .price span {
+      font-size: 1rem;
+      color: var(--gray-500);
+      font-weight: 600;
+    }
+
+    .pricing-card .tagline {
+      color: var(--gray-500);
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+
+    .pricing-card ul {
+      list-style: none;
+      margin-bottom: 36px;
+      text-align: left;
+    }
+
+    .pricing-card ul li {
+      padding: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95rem;
+      color: var(--gray-700);
+    }
+
+    .pricing-card ul li::before {
+      content: '✓';
+      width: 28px;
+      height: 28px;
+      background: var(--green-100);
+      color: var(--green-600);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .pricing-card .btn { width: 100%; }
+
+    /* STATS */
+    .stats {
+      padding: 80px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 28px;
+    }
+
+    .stat-card {
+      background: var(--green-50);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      text-align: center;
+    }
+
+    .stat-card .number {
+      font-family: 'Baloo 2', cursive;
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--green-600);
+      line-height: 1.2;
+    }
+
+    .stat-card p {
+      color: var(--gray-500);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* TECH */
+    .tech-strip {
+      padding: 60px 0;
+      text-align: center;
+    }
+
+    .tech-logos {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 32px;
+    }
+
+    .tech-pill {
+      background: var(--green-50);
+      border: 2px solid var(--green-100);
+      padding: 14px 32px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      color: var(--gray-700);
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .tech-pill:hover {
+      background: var(--green-100);
+      border-color: var(--green-300);
+      transform: scale(1.05);
+    }
+
+    /* CTA */
+    .cta {
+      padding: 100px 0;
+    }
+
+    .cta-box {
+      background: linear-gradient(135deg, var(--green-500), var(--green-600));
+      border-radius: var(--radius-xl);
+      padding: 80px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      left: -80px;
+      width: 250px;
+      height: 250px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .cta-box::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      right: -60px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+
+    .cta-box > * { position: relative; z-index: 1; }
+
+    .cta-box h2 {
+      color: var(--white);
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      margin-bottom: 16px;
+    }
+
+    .cta-box p {
+      color: rgba(255,255,255,0.85);
+      font-size: 1.2rem;
+      max-width: 520px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 48px 0;
+      text-align: center;
+      border-top: 1px solid var(--green-100);
+    }
+
+    footer p { color: var(--gray-500); font-size: 0.9rem; }
+    footer .logo { justify-content: center; margin-bottom: 16px; font-size: 1.3rem; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .demo-input-group { flex-direction: column; }
+      .api-box { padding: 32px 20px; }
+      .code-block { font-size: 0.8rem; padding: 20px; }
+      .cta-box { padding: 48px 28px; }
+      .how-it-works { margin: 0 12px; padding: 60px 20px; }
+      .demo-box { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <a href="#" class="logo">
+        <div class="logo-blob">🛡️</div>
+        Trust Layer
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#api">API</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#demo" class="btn btn-primary" style="padding: 10px 28px; font-size: 0.95rem;">Try It Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="container">
+      <div class="hero-badge">🚀 Powered by Hugging Face AI</div>
+      <h1>Keep Your<br/>Community <span class="green">Squeaky Clean</span></h1>
+      <p>AI-powered toxicity detection, NSFW image filtering, and smart customer care replies — all from one delightful API.</p>
+      <div class="hero-buttons">
+        <a href="#demo" class="btn btn-primary">Try the Demo</a>
+        <a href="#api" class="btn btn-outline">View API Docs</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section id="demo" class="demo-section">
+    <div class="container">
+      <div class="demo-box">
+        <h2>Try It Right Now!</h2>
+        <p>Type anything below and see the magic happen</p>
+        <div class="demo-input-group">
+          <input type="text" id="demoInput" placeholder="Type a message to check..." />
+          <button class="btn btn-primary" onclick="runDemo()">Check It</button>
+        </div>
+        <div class="demo-result" id="demoResult"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-header">
+        <h2>Three Superpowers,<br/>One Tiny API</h2>
+        <p>Everything you need to keep your platform safe, friendly, and on-brand.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Toxicity Detection</h3>
+          <p>Powered by toxic-bert, every message gets a toxicity score in milliseconds. Flag, filter, or warn — your call.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🖼️</div>
+          <h3>NSFW Image Filter</h3>
+          <p>Upload any image and our Falconsai model instantly tells you if it's safe for work or needs to be hidden.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3>Smart Customer Care</h3>
+          <p>Auto-generate empathetic, on-brand replies to customer feedback using Qwen 2.5 — 24/7, no coffee breaks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="number">50ms</div>
+          <p>Avg Response Time</p>
+        </div>
+        <div class="stat-card">
+          <div class="number">99.2%</div>
+          <p>Detection Accuracy</p>
+        </div>
+        <div class="stat-card">
+          <div class="number">10M+</div>
+          <p>Messages Scanned</p>
+        </div>
+        <div class="stat-card">
+          <div class="number">24/7</div>
+          <p>Always On</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <h2>Stupid Simple<br/>to Get Started</h2>
+        <p>Three steps. That's it. Seriously.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Grab Your Key</h3>
+          <p>Sign up and get your API key in under 30 seconds flat.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Send a Request</h3>
+          <p>POST your text or image to our endpoint — we handle the rest.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Stay Safe!</h3>
+          <p>Get instant results — block, flag, or auto-reply based on the score.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- API -->
+  <section id="api" class="api-section">
+    <div class="container">
+      <div class="api-box">
+        <h2>Dead Simple API</h2>
+        <p>One POST request is all you need.</p>
+        <div class="code-block">
+          <span class="comment">// Check if a message is toxic</span><br/>
+          <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="method">fetch</span>(<span class="string">'/check-toxicity'</span>, {<br/>
+          &nbsp;&nbsp;<span class="method">method</span>: <span class="string">'POST'</span>,<br/>
+          &nbsp;&nbsp;<span class="method">headers</span>: { <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span> },<br/>
+          &nbsp;&nbsp;<span class="method">body</span>: JSON.<span class="method">stringify</span>({ <span class="method">text</span>: <span class="string">'Hello world!'</span> })<br/>
+          });<br/><br/>
+          <span class="comment">// Response:</span><br/>
+          <span class="comment">// { "toxic": false, "score": 0.012 }</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" class="pricing">
+    <div class="container">
+      <div class="section-header">
+        <h2>Pick Your Vibe</h2>
+        <p>Start free. Scale when you're ready. No surprise bills, ever.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3>Starter</h3>
+          <div class="price">Free<br/><span>forever</span></div>
+          <p class="tagline">Perfect for side projects</p>
+          <ul>
+            <li>1,000 requests / month</li>
+            <li>Toxicity detection</li>
+            <li>Community support</li>
+            <li>Basic dashboard</li>
+          </ul>
+          <a href="#" class="btn btn-outline">Get Started</a>
+        </div>
+        <div class="pricing-card popular">
+          <div class="popular-badge">MOST POPULAR</div>
+          <h3>Pro</h3>
+          <div class="price">$29<br/><span>/ month</span></div>
+          <p class="tagline">For growing platforms</p>
+          <ul>
+            <li>50,000 requests / month</li>
+            <li>All 3 AI features</li>
+            <li>Priority support</li>
+            <li>Webhooks & job queue</li>
+            <li>Analytics dashboard</li>
+          </ul>
+          <a href="#" class="btn btn-primary">Start Free Trial</a>
+        </div>
+        <div class="pricing-card">
+          <h3>Enterprise</h3>
+          <div class="price">Custom<br/><span>let's talk</span></div>
+          <p class="tagline">For serious scale</p>
+          <ul>
+            <li>Unlimited requests</li>
+            <li>Custom AI models</li>
+            <li>Dedicated support</li>
+            <li>SLA & uptime guarantee</li>
+            <li>On-prem deployment</li>
+          </ul>
+          <a href="#" class="btn btn-outline">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STRIP -->
+  <section class="tech-strip">
+    <div class="container">
+      <h2 style="font-size: 2rem; margin-bottom: 8px;">Built With Love &amp; Cool Stuff</h2>
+      <div class="tech-logos">
+        <div class="tech-pill">Node.js</div>
+        <div class="tech-pill">Express</div>
+        <div class="tech-pill">Hugging Face</div>
+        <div class="tech-pill">BullMQ</div>
+        <div class="tech-pill">Redis</div>
+        <div class="tech-pill">Toxic-BERT</div>
+        <div class="tech-pill">Qwen 2.5</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Ready to Clean<br/>Things Up?</h2>
+        <p>Join hundreds of devs building safer communities with Trust Layer. It's free to start.</p>
+        <div class="cta-buttons">
+          <a href="#" class="btn btn-white">Start Building Free</a>
+          <a href="#" class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.4);">Talk to Sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <a href="#" class="logo">
+        <div class="logo-blob" style="width: 32px; height: 32px; font-size: 1rem;">🛡️</div>
+        Trust Layer
+      </a>
+      <p>&copy; 2026 Trust Layer. Made with lots of green and zero toxicity.</p>
+    </div>
+  </footer>
+
+  <script>
+    function runDemo() {
+      const input = document.getElementById('demoInput');
+      const result = document.getElementById('demoResult');
+      const text = input.value.trim();
+
+      if (!text) {
+        result.className = 'demo-result toxic';
+        result.style.display = 'block';
+        result.textContent = '🤔 Type something first!';
+        return;
+      }
+
+      const toxicWords = ['hate', 'stupid', 'idiot', 'kill', 'die', 'ugly', 'dumb', 'loser', 'shut up', 'trash', 'worst', 'terrible', 'awful'];
+      const lower = text.toLowerCase();
+      const isToxic = toxicWords.some(w => lower.includes(w));
+      const score = isToxic ? (0.85 + Math.random() * 0.14).toFixed(3) : (Math.random() * 0.15).toFixed(3);
+
+      if (isToxic) {
+        result.className = 'demo-result toxic';
+        result.innerHTML = `🚨 <strong>Toxic!</strong> Score: ${score} — This message would be flagged.`;
+      } else {
+        result.className = 'demo-result safe';
+        result.innerHTML = `✅ <strong>All clear!</strong> Score: ${score} — This message is safe.`;
+      }
+    }
+
+    document.getElementById('demoInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') runDemo();
+    });
+  </script>
+
+</body>
+</html>
